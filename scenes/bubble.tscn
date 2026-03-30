@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://ltjsl3jdm3c0"]
+
+[ext_resource type="Texture2D" uid="uid://mo54k6p0j8o6" path="res://assets/art/Circle-0001.png" id="1_2vdav"]
+[ext_resource type="Script" uid="uid://c2cmxxgu8lhl6" path="res://scripts/bubble.gd" id="1_pm753"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_pm753"]
+radius = 31.956604
+
+[node name="bubble" type="Area2D" unique_id=992916743]
+script = ExtResource("1_pm753")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=34711910]
+position = Vector2(-2.3841858e-07, 4.7683716e-07)
+scale = Vector2(2.052889, 1.8804847)
+texture = ExtResource("1_2vdav")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1811943906]
+scale = Vector2(1.0019054, 0.9466657)
+shape = SubResource("CircleShape2D_pm753")
+
+[connection signal="popped" from="." to="." method="_on_popped"]

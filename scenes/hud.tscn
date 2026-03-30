@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bgqr5n22t2n5k"]
+
+[ext_resource type="Script" uid="uid://c2v4jwoj356yy" path="res://scripts/hud.gd" id="1_ahhtf"]
+
+[node name="HUD" type="CanvasLayer" unique_id=1953913010]
+script = ExtResource("1_ahhtf")
+
+[node name="PopsLabel" type="Label" parent="." unique_id=893251547]
+offset_left = 1624.0
+offset_top = 28.0
+offset_right = 1883.0
+offset_bottom = 84.0
+text = "0"
+
+[node name="ScoreLabel" type="Label" parent="." unique_id=746974314]
+offset_left = 1625.0
+offset_top = 76.0
+offset_right = 1850.0
+offset_bottom = 131.0
+text = "0"
+
+[node name="MultiplierLabel" type="Label" parent="." unique_id=120938471]
+offset_left = 20.0
+offset_top = 19.0
+offset_right = 683.0
+offset_bottom = 312.0
+text = "Multiplier: -"
+autowrap_mode = 3
