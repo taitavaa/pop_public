@@ -1,10 +1,28 @@
 [gd_scene format=3 uid="uid://dywlioegjdkac"]
 
-[ext_resource type="Script" path="res://scripts/game_scene.gd" id="1_2o8n8"]
-
+[ext_resource type="Script" uid="uid://b8wfwdcmm1fb3" path="res://scripts/GridManager.gd" id="1_w88cy"]
+[ext_resource type="Texture2D" uid="uid://c7xtiadlevg1" path="res://assets/art/Näyttökuva 2025-08-29 235620.png" id="2_2s7k2"]
 [ext_resource type="PackedScene" uid="uid://bgqr5n22t2n5k" path="res://scenes/hud.tscn" id="2_w88cy"]
 
 [node name="Grid" type="Node2D" unique_id=1378424183]
-script = ExtResource("1_2o8n8")
+script = ExtResource("1_w88cy")
+
+[node name="BoardContainer" type="Node2D" parent="." unique_id=1792211102]
+position = Vector2(448, 223)
+
+[node name="BoardPanel" type="TextureRect" parent="BoardContainer" unique_id=930178614]
+offset_right = 960.0
+offset_bottom = 640.0
+mouse_filter = 2
+texture = ExtResource("2_2s7k2")
+metadata/_edit_use_anchors_ = true
+
+[node name="BoardDesignLayer" type="Node2D" parent="BoardContainer" unique_id=1235877330]
+
+[node name="BubbleContainer" type="Node2D" parent="BoardContainer" unique_id=1883858978]
+position = Vector2(32, 32)
+
+[node name="EffectContainer" type="Node2D" parent="BoardContainer" unique_id=1052335772]
+position = Vector2(32, 32)
 
 [node name="HUD" parent="." unique_id=1953913010 instance=ExtResource("2_w88cy")]

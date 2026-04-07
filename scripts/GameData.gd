@@ -1,18 +1,20 @@
 class_name GameData
 extends RefCounted
 
+const TEMPLATE_SCRIPT = preload("res://scripts/BubbleTemplate.gd")
+
 # bubble model.
 const COLORS = {
-	"ruby": {
-		"display_name": "Ruby",
+	"red": {
+		"display_name": "Red",
 		"color": Color.RED
 	},
-	"amber": {
-		"display_name": "Amber",
+	"orange": {
+		"display_name": "Orange",
 		"color": Color.DARK_ORANGE
 	},
-	"teal": {
-		"display_name": "Teal",
+	"cyan": {
+		"display_name": "Cyan",
 		"color": Color.CYAN
 	}
 }
@@ -21,14 +23,33 @@ const EFFECTS = {
 	"none": {
 		"display_name": "None"
 	},
-	"explosion_effect": {
+	"explosion": {
 		"display_name": "Explosion"
 	},
-	"color_blob_chain_effect": {
-		"display_name": "Color Blob Chain"
+	"chain": {
+		"display_name": "Chain"
 	},
-	"random_effect": {
+	"directional_clear": {
+		"display_name": "Directional Clear"
+	},
+	"random": {
 		"display_name": "Random"
+	}
+}
+
+## SYNERGIES: When effect combinations are triggered
+const SYNERGIES = {
+	"explosion_directional": {
+		"required_effects": ["explosion", "directional_clear"],
+		"result_effect": "explosion_all_directions",
+		"bonus_multiplier": 0.3,
+		"description": "Explosion in all 4 directions"
+	},
+	"chain_explosion": {
+		"required_effects": ["chain", "explosion"],
+		"result_effect": "chain_explosion_cascade",
+		"bonus_multiplier": 0.25,
+		"description": "Chain spreads explosions"
 	}
 }
 
@@ -50,29 +71,106 @@ const PAYLOADS = {
 	}
 }
 
-const BUBBLE_RECIPES = {
-	"ruby_standard": {
-		"color_id": "ruby",
-		"effect_ids": ["color_blob_chain_effect"],
-		"payload_id": "standard",
-		"chance": 45,
-		"score_multiplier_bonus": 0.0
-	},
-	"amber_explosive_bonus": {
-		"color_id": "amber",
-		"effect_ids": ["explosion_effect"],
-		"payload_id": "bonus_score",
-		"chance": 30,
-		"score_multiplier_bonus": 0.15
-	},
-	"teal_random_mult": {
-		"color_id": "teal",
-		"effect_ids": ["color_blob_chain_effect"],
-		"payload_id": "high_multiplier",
-		"chance": 25,
-		"score_multiplier_bonus": 0.2
+const BAG_PRESETS = {
+	"starter": {
+		"display_name": "Starter",
+		"grid_size": {"x": 10, "y": 10},
+		"entries": [
+			{
+				"count": 42,
+				"template": {
+					"color_id": "red",
+					"effect_ids": ["none"],
+					"properties": [],
+					"payload_id": "standard",
+					"score_multiplier_bonus": 0.0
+				}
+			},
+			{
+				"count": 0,
+				"template": {
+					"color_id": "orange",
+					"effect_ids": ["explosion"],
+					"properties": [],
+					"payload_id": "bonus_score",
+					"score_multiplier_bonus": 0.15
+				}
+			},
+			{
+				"count": 1,
+				"template": {
+					"color_id": "cyan",
+					"effect_ids": ["chain"],
+					"properties": [],
+					"payload_id": "high_multiplier",
+					"score_multiplier_bonus": 0.2
+				}
+			}
+		]
 	}
 }
+
+## NEW TEMPLATE SYSTEM - creates tempalte instances for the bag
+static func create_bubble_template(
+	p_color: String,
+	p_effects: Array[String] = [],
+	p_properties: Array[String] = [],
+	p_payload: String = "standard",
+	p_mult: float = 0.0
+):
+	return TEMPLATE_SCRIPT.new(p_color, p_effects, p_properties, p_payload, p_mult)
+
+## default bag for now, later I'll add more presets and a custom bag builder
+static func get_default_bubble_bag(bag_id: String = "starter"):
+	var preset: Dictionary = _get_bag_preset(bag_id)
+	return _build_bag_from_entries(preset.get("entries", []))
+
+static func get_bag_grid_size(bag_id: String = "starter") -> Vector2i:
+	var preset: Dictionary = _get_bag_preset(bag_id)
+	var grid_size_data = preset.get("grid_size", null)
+	if grid_size_data is Dictionary:
+		var grid_dict: Dictionary = grid_size_data
+		return Vector2i(int(grid_dict.get("x", 0)), int(grid_dict.get("y", 0)))
+	if grid_size_data is Vector2i:
+		return grid_size_data
+	return Vector2i.ZERO
+
+static func get_available_bag_ids() -> Array[String]:
+	return BAG_PRESETS.keys()
+
+static func _get_bag_preset(bag_id: String) -> Dictionary:
+	if BAG_PRESETS.has(bag_id):
+		return BAG_PRESETS[bag_id]
+	return BAG_PRESETS["starter"]
+
+static func _build_bag_from_entries(entries: Array):
+	var bag: Array = []
+
+	for entry in entries:
+		var count: int = max(0, int(entry.get("count", 0)))
+		var template_data: Dictionary = entry.get("template", {})
+		for i in range(count):
+			bag.append(_create_template_from_data(template_data))
+
+	bag.shuffle()
+	return bag
+
+static func _create_template_from_data(template_data: Dictionary):
+	var color_id: String = str(template_data.get("color_id", "red"))
+	var effect_ids: Array[String] = _to_string_array(template_data.get("effect_ids", []))
+	var properties: Array[String] = _to_string_array(template_data.get("properties", []))
+
+	var payload_id: String = str(template_data.get("payload_id", "standard"))
+	var score_multiplier_bonus: float = float(template_data.get("score_multiplier_bonus", 0.0))
+
+	return create_bubble_template(color_id, effect_ids, properties, payload_id, score_multiplier_bonus)
+
+static func _to_string_array(values: Array) -> Array[String]:
+	var result: Array[String] = []
+	for value in values:
+		result.append(str(value))
+	return result
+
 
 # ITEMS
 const ITEMS = {
@@ -227,98 +325,45 @@ class SampleDoubleScoreModifier:
 
 
 # HELPER FUNCTIONS
-static func get_bubble_type_data(type_key: String) -> Dictionary:
-	if type_key in BUBBLE_RECIPES:
-		return get_bubble_recipe_data(type_key)
-	return get_bubble_recipe_data("ruby_standard")
-
-static func pick_random_bubble_type() -> String:
-	return pick_random_bubble_recipe_id()
 
 static func get_color_data(color_id: String) -> Dictionary:
-	if color_id in COLORS:
-		return COLORS[color_id]
-	return COLORS["ruby"]
+	return COLORS.get(color_id, COLORS["red"])
 
 static func get_effect_data(effect_id: String) -> Dictionary:
-	if effect_id in EFFECTS:
-		return EFFECTS[effect_id]
-	return EFFECTS["none"]
+	return EFFECTS.get(effect_id, EFFECTS["none"])
 
 static func get_payload_data(payload_id: String) -> Dictionary:
-	if payload_id in PAYLOADS:
-		return PAYLOADS[payload_id]
-	return PAYLOADS["standard"]
+	return PAYLOADS.get(payload_id, PAYLOADS["standard"])
 
-static func get_bubble_recipe_data(recipe_id: String) -> Dictionary:
-	if recipe_id in BUBBLE_RECIPES:
-		return BUBBLE_RECIPES[recipe_id]
-	return BUBBLE_RECIPES["ruby_standard"]
-
-static func get_recipe_effect_ids(recipe_data: Dictionary) -> Array[String]:
-	var resolved: Array[String] = []
-
-	if recipe_data.has("effect_ids"):
-		for value in recipe_data.get("effect_ids", []):
-			var effect_id := str(value)
-			if effect_id in EFFECTS:
-				resolved.append(effect_id)
-
-	if resolved.is_empty() and recipe_data.has("effect_id"):
-		var legacy_effect_id := str(recipe_data.get("effect_id", "none"))
-		if legacy_effect_id in EFFECTS:
-			resolved.append(legacy_effect_id)
-
-	if resolved.is_empty():
-		resolved.append("none")
-
-	return resolved
-
-static func get_default_bubble_sheet() -> Dictionary:
-	var sheet := {}
-	for recipe_id in BUBBLE_RECIPES.keys():
-		sheet[recipe_id] = int(BUBBLE_RECIPES[recipe_id].get("chance", 0))
-	return sheet
-
-static func pick_random_bubble_recipe_id() -> String:
-	return pick_random_bubble_recipe_from_sheet(get_default_bubble_sheet())
-
-static func pick_random_bubble_recipe_from_sheet(sheet_weights: Dictionary) -> String:
-	var recipe_ids = BUBBLE_RECIPES.keys()
-	if recipe_ids.is_empty():
-		return "ruby_standard"
-
-	var total := 0
-	for recipe_id in recipe_ids:
-		var chance := int(sheet_weights.get(recipe_id, 0))
-		if chance > 0:
-			total += chance
-
-	if total <= 0:
-		return "ruby_standard"
-
-	var roll = randi_range(1, total)
-	var cumulative := 0
-
-	for recipe_id in recipe_ids:
-		var chance := int(sheet_weights.get(recipe_id, 0))
-		if chance <= 0:
-			continue
-		cumulative += chance
-		if roll <= cumulative:
-			return recipe_id
-
-	return "ruby_standard"
+## Check if effect IDs trigger a synergy
+static func check_synergy(effect_ids: Array[String]) -> Dictionary:
+	for synergy_name in SYNERGIES.keys():
+		var synergy: Dictionary = SYNERGIES[synergy_name]
+		var required: Array = synergy["required_effects"]
+		
+		# Check if ALL required effects exist
+		if required.all(func(e): return e in effect_ids):
+			return {
+				"triggered": true,
+				"synergy_name": synergy_name,
+				"result_effect": synergy["result_effect"],
+				"bonus_multiplier": synergy["bonus_multiplier"],
+				"description": synergy["description"]
+			}
+	
+	return {
+		"triggered": false,
+		"synergy_name": "",
+		"result_effect": "",
+		"bonus_multiplier": 0.0,
+		"description": ""
+	}
 
 static func get_item(item_id: String) -> Dictionary:
-	if item_id in ITEMS:
-		return ITEMS[item_id]
-	return {}
+	return ITEMS.get(item_id, {})
 
 static func get_upgrade(upgrade_id: String) -> Dictionary:
-	if upgrade_id in UPGRADES:
-		return UPGRADES[upgrade_id]
-	return {}
+	return UPGRADES.get(upgrade_id, {})
 
 static func get_all_items() -> Array[String]:
 	return ITEMS.keys()

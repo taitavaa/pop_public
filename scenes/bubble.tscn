@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ltjsl3jdm3c0"]
 
 [ext_resource type="Texture2D" uid="uid://mo54k6p0j8o6" path="res://assets/art/Circle-0001.png" id="1_2vdav"]
-[ext_resource type="Script" uid="uid://c2cmxxgu8lhl6" path="res://scripts/bubble.gd" id="1_pm753"]
+[ext_resource type="Script" uid="uid://pvwii2gq1nd3" path="res://scripts/Bubble.gd" id="1_pm753"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_pm753"]
 radius = 31.956604

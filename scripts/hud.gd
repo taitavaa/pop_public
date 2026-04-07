@@ -9,7 +9,6 @@ func _ready() -> void:
 	_update_score(RunManager.score)
 	_update_multiplier(RunManager.last_score_breakdown)
 	
-	# Keepx HUD reactive during gameplay.
 	RunManager.pops_remaining_changed.connect(_update_pops)
 	RunManager.score_changed.connect(_update_score)
 	RunManager.last_score_breakdown_changed.connect(_update_multiplier)
@@ -24,4 +23,4 @@ func _update_multiplier(value: String) -> void:
 	if value.is_empty():
 		multiplier_label.text = "Multiplier: -"
 		return
-	multiplier_label.text = "Multiplier: %s" % value
+	multiplier_label.text = "Multiplier: see terminal"
